@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Cyber Threat Intelligence Dashboard</title>
+
+ <style>
+  body{
+  margin:0;
+  background:#08111f;
+  font-family:Arial,sans-serif;
+  color:white;
+  }
+ 
+  header{
+  background:#0f172a;
+  padding:20px;
+  text-align:center;
+  border-bottom:2px solid cyan;
+  }
+ 
+  h1{
+  color:cyan;
+  margin:0;
+  }
+
+  #clock{
+  margin-top:10px;
+  font-size:18px;
+  }
+
+  .dashboard{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+  padding:20px;
+  }
+
+  .card{
+  background:#111827;
+  padding:20px;
+  border-radius:12px;
+  text-align:center;
+  box-shadow:0 0 15px rgba(0,255,255,.3);
+  }
+ 
+  .card h3{
+  color:#00ffff;
+  }
+
+  .card p{
+  font-size:2rem;
+  font-weight:bold;
+  }
+
+ .section{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:20px;
+  padding:20px;
+  }
+
+  .panel{
+  background:#111827;
+  border-radius:12px;
+  padding:20px;
+  }
+
+  .panel h2{
+  color:cyan;
+  }
+
+  .feed{
+  height:350px;
+  overflow:auto;
+  }
+
+  .log{
+  padding:10px;
+  margin-bottom:10px;
+  background:#1f2937;
+  border-left:4px solid red;
+  }
+
+  .status{
+  display:flex;
+  justify-content:space-between;
+  padding:10px;
+  border-bottom:1px solid #333;
+  }
+
+  .online{
+  color:#00ff88;
+  }
+
+  canvas{
+  background:#0f172a;
+  border-radius:10px;
+  width:100%;
+  }
+
+  table{
+  width:100%;
+  border-collapse:collapse;
+  }
+
+  th,td{
+  padding:10px;
+  border-bottom:1px solid #333;
+  }
+
+  th{
+  color:cyan;
+  }
+
+  .ai-box{
+  text-align:center;
+  padding:20px;
+  }
+
+  .ai-score{
+  font-size:3rem;
+  color:#00ffea;
+  }
+
+  footer{
+  padding:20px;
+  text-align:center;
+  background:#0f172a;
+  margin-top:20px;
+  }
+
+  @media(max-width:900px){
+  .section{
+  grid-template-columns:1fr;
+  } 
+  }
+ </style>
+
+</head>
+<body>
+
+ <header>
+  <h1>CYBER THREAT INTELLIGENCE CENTER</h1>
+  <div id="clock"></div>
+ </header>
+
+ <div class="dashboard">
+
+ <div class="card">
+  <h3>Total Threats</h3>
+  <p id="totalThreats">12543</p>
+ </div>
+
+ <div class="card">
+  <h3>Active Threats</h3>
+  <p id="activeThreats">245</p>
+ </div>
+
+ <div class="card">
+<h3>Malware</h3>
+<p id="malware">0</p>
+ </div>
+
+ <div class="card">
+ <h3>Phishing</h3>
+ <p id="phishing">0</p>
+ </div>
+
+ <div class="card">
+ <h3>DDoS</h3>
+ <p id="ddos">0</p>
+ </div>
+
+ <div class="card">
+ <h3>Critical Alerts</h3>
+ <p id="critical">0</p>
+ </div>
+
+ </div>
+
+ <div class="section">
+
+ <div class="panel">
+ <h2>Live Threat Feed</h2>
+ <div class="feed" id="feed"></div>
+ </div>
+
+ <div class="panel">
+ <h2>Threat Trend</h2>
+ <canvas id="chart" width="500" height="350"></canvas>
+ </div>
+
+ </div>
+
+ <div class="section">
+
+ <div class="panel">
+
+ <h2>Security Control Status</h2>
+
+ <div class="status">
+ <span>Firewall Protection</span>
+ <span class="online">ONLINE</span>
+ </div>
+
+ <div class="status">
+ <span>Endpoint Security</span>
+ <span class="online">ONLINE</span>
+  </div>
+
+ <div class="status">
+ <span>IDS/IPS</span>
+ <span class="online">ONLINE</span>
+ </div>
+
+ <div class="status">
+ <span>Threat Detection Engine</span>
+ <span class="online">ONLINE</span>
+ </div>
+
+ </div>
+
+ <div class="panel">
+
+ <h2>AI Threat Prediction</h2>
+
+ <div class="ai-box">
+ <div class="ai-score" id="risk">78%</div>
+ <p>Predicted Threat Level</p>
+ <h3 id="level">High</h3>
+ </div>
+
+ </div>
+
+ </div>
+
+ <div style="padding:20px">
+
+ <div class="panel">
+
+ <h2>Threat Intelligence Database</h2>
+
+ <table>
+
+ <thead>
+
+ <tr>
+ <th>ID</th>
+ <th>Time</th>
+ <th>Type</th>
+ <th>Country</th>
+ <th>Severity</th>
+ </tr>
+
+ </thead>
+
+ <tbody id="tbody">
+
+ </tbody>
+
+ </table>
+
+ </div>
+
+ </div>
+
+ <footer>
+
+ HCL Technologies Cyber Threat Intelligence Dashboard<br>
+
+ Training Project
+
+ </footer>
+
+ <script>
+
+ const feed=document.getElementById("feed");
+ const tbody=document.getElementById("tbody");
+
+ const chart=document.getElementById("chart");
+ const ctx=chart.getContext("2d");
+
+ let malware=100;
+ let phishing=150;
+ let ddos=70;
+ let critical=55;
+
+ let lineData=[];
+
+ const attacks=[
+ "Malware",
+ "Phishing",
+ "DDoS",
+ "Ransomware",
+ "Data Breach",
+ "Insider Threat"
+ ];
+
+ const countries=[
+ "India",
+ "USA",
+ "China",
+ "Russia",
+ "Germany",
+ "UK",
+ "Australia"
+ ];
+
+ function updateClock(){
+
+ document.getElementById("clock").innerHTML=
+ new Date().toLocaleString();
+ 
+ }
+
+ setInterval(updateClock,1000);
+ updateClock();
+
+ function generateThreat(){
+
+ let attack=
+ attacks[Math.floor(Math.random()*attacks.length)];
+
+ let country=
+ countries[Math.floor(Math.random()*countries.length)];
+
+ const levels=["Low","Medium","High","Critical"];
+
+ let severity=
+ levels[Math.floor(Math.random()*4)];
+
+ document.getElementById("totalThreats").innerHTML=
+ parseInt(document.getElementById("totalThreats").innerHTML)+1;
+
+ document.getElementById("activeThreats").innerHTML=
+ parseInt(document.getElementById("activeThreats").innerHTML)+1;
+
+ if(attack==="Malware"){
+ malware++;
+ document.getElementById("malware").innerHTML=malware;
+ }
+
+ if(attack==="Phishing"){
+ phishing++;
+ document.getElementById("phishing").innerHTML=phishing;
+ }
+
+ if(attack==="DDoS"){
+ ddos++;
+ document.getElementById("ddos").innerHTML=ddos;
+ }
+
+ if(severity==="Critical"){
+ critical++;
+ document.getElementById("critical").innerHTML=critical;
+ }
+
+ let log=document.createElement("div");
+
+ log.className="log";
+
+ log.innerHTML=
+ `[${severity}] ${attack} detected from ${country}`;
+
+ feed.prepend(log);
+
+ if(feed.children.length>40){
+ feed.removeChild(feed.lastChild);
+ }
+
+ let row=tbody.insertRow(0);
+
+ row.innerHTML=`
+ <td>CT-${Math.floor(Math.random()*99999)}</td>
+ <td>${new Date().toLocaleTimeString()}</td>
+ <td>${attack}</td>
+ <td>${country}</td>
+ <td>${severity}</td>
+ `;
+
+ if(tbody.rows.length>20){
+  tbody.deleteRow(20);
+ }
+
+ lineData.push(Math.random()*250+40);
+
+ if(lineData.length>25){
+ lineData.shift();
+ }
+
+ drawChart();
+ updateAI();
+
+  }
+
+  function drawChart(){
+
+ ctx.clearRect(0,0,500,350);
+
+ ctx.strokeStyle="#00ffff";
+ ctx.lineWidth=3;
+
+ ctx.beginPath();
+
+ lineData.forEach((v,i)=>{
+
+ let x=i*20;
+
+ let y=330-v;
+
+ if(i===0){
+ ctx.moveTo(x,y);
+ }else{
+ ctx.lineTo(x,y);
+ }
+
+ });
+
+ ctx.stroke();
+
+ }
+
+  function updateAI(){
+
+ let score=
+ Math.floor(Math.random()*100);
+
+ document.getElementById("risk").innerHTML=
+ score+"%";
+
+ if(score<30){
+ document.getElementById("level").innerHTML="Low";
+ }else if(score<60){
+ document.getElementById("level").innerHTML="Medium";
+ }else if(score<80){
+ document.getElementById("level").innerHTML="High";
+ }else{
+ document.getElementById("level").innerHTML="Critical";
+ }
+
+ }
+
+ for(let i=0;i<15;i++){
+ generateThreat();
+ }
+ 
+ setInterval(generateThreat,1000);
+ 
+
+</script>
+</body>
+</html>
